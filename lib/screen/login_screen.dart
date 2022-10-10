@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:formvalidation/providers/login_form_provider.dart';
 import 'package:formvalidation/widgets/card_container.dart';
+import 'package:provider/provider.dart';
 
 import '../styles/input_decorations.dart';
 import '../widgets/auth_background.dart';
@@ -21,7 +23,12 @@ class LoginScreen extends StatelessWidget {
                 const SizedBox(height: 10),
                 Text('Login', style: Theme.of(context).textTheme.headline4),
                 const SizedBox(height: 30),
-                _LoginForm(),
+
+                //el scope del providerForm es solo el formulario
+                ChangeNotifierProvider(
+                  create: (_) => LoginFormProvider(),
+                  child: _LoginForm(),
+                ),
                 const SizedBox(height: 10),
               ],
             )),
@@ -39,11 +46,12 @@ class LoginScreen extends StatelessWidget {
 }
 
 class _LoginForm extends StatelessWidget {
-  const _LoginForm();
-
   @override
   Widget build(BuildContext context) {
+    //indicamos que tipo de provider queremos y nos lo guardamos.
+    final loginForm = Provider.of<LoginFormProvider>(context);
     return Form(
+      key: loginForm.formKey,
       //se evalua por pirmera vez al tocar el form
       autovalidateMode: AutovalidateMode.onUserInteraction,
       child: Column(
@@ -102,7 +110,10 @@ class _LoginForm extends StatelessWidget {
                   style: TextStyle(color: Colors.white),
                 ),
               ),
-              onPressed: () {})
+              onPressed: () {
+                //llamamso a un método del provider
+                loginForm.isValidForm();
+              })
         ],
       ),
     );
