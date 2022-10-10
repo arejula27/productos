@@ -44,6 +44,8 @@ class _LoginForm extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Form(
+      //se evalua por pirmera vez al tocar el form
+      autovalidateMode: AutovalidateMode.onUserInteraction,
       child: Column(
         children: [
           TextFormField(
@@ -53,7 +55,18 @@ class _LoginForm extends StatelessWidget {
                 hintText: 'messirve@gmail.com',
                 labelText: 'Correo electrónico',
                 prefixIcon: Icons.alternate_email_rounded),
-            //validator: V,
+
+            //si es corrector devuelve null, sino el string del error
+            validator: (value) {
+              String pattern =
+                  r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
+              RegExp regExp = RegExp(pattern);
+
+              //comprobar si es igual que match o nulo, si es nulo usa el string ''
+              return regExp.hasMatch(value ?? '')
+                  ? null
+                  : 'El valor ingresado no es un correo';
+            },
           ),
           const SizedBox(
             height: 20,
@@ -66,6 +79,11 @@ class _LoginForm extends StatelessWidget {
                 hintText: '*****',
                 labelText: 'Contraseña',
                 prefixIcon: Icons.lock_outline),
+            validator: (value) {
+              return (value != null && value.length > 6)
+                  ? null
+                  : "Contraseña debe tener al menos 6 caracteres";
+            },
           ),
           const SizedBox(
             height: 20,
