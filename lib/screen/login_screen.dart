@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:formvalidation/providers/login_form_provider.dart';
 import 'package:formvalidation/widgets/card_container.dart';
@@ -106,21 +108,28 @@ class _LoginForm extends StatelessWidget {
               disabledColor: Colors.grey,
               elevation: 0,
               color: Colors.deepPurple,
+              onPressed: loginForm.isLoading
+                  ? null
+                  : () async {
+                      //quitamos el teclado de pantalla
+                      FocusScope.of(context).unfocus();
+                      //llamamso a un método del provider
+                      if (!loginForm.isValidForm()) {
+                        return;
+                      }
+                      loginForm.isLoading = true;
+                      await Future.delayed(const Duration(seconds: 2));
+                      loginForm.isLoading = false;
+                      Navigator.pushReplacementNamed(context, "home");
+                    },
               child: Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 80, vertical: 15),
-                child: const Text(
-                  'Ingresar',
-                  style: TextStyle(color: Colors.white),
+                child: Text(
+                  loginForm.isLoading ? "Espere..." : "Ingresar",
+                  style: const TextStyle(color: Colors.white),
                 ),
-              ),
-              onPressed: () {
-                //llamamso a un método del provider
-                if (!loginForm.isValidForm()) {
-                  return;
-                }
-                Navigator.pushReplacementNamed(context, "home");
-              })
+              ))
         ],
       ),
     );
