@@ -51,6 +51,8 @@ class _LoginForm extends StatelessWidget {
     //indicamos que tipo de provider queremos y nos lo guardamos.
     final loginForm = Provider.of<LoginFormProvider>(context);
     return Form(
+      //esta clave sera usada por el provider para interactuar con el form y conocer
+      //su estado, es inizaliada en el provider.
       key: loginForm.formKey,
       //se evalua por pirmera vez al tocar el form
       autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -64,6 +66,7 @@ class _LoginForm extends StatelessWidget {
                 labelText: 'Correo electrónico',
                 prefixIcon: Icons.alternate_email_rounded),
 
+            onChanged: (value) => loginForm.email = value,
             //si es corrector devuelve null, sino el string del error
             validator: (value) {
               String pattern =
@@ -87,6 +90,7 @@ class _LoginForm extends StatelessWidget {
                 hintText: '*****',
                 labelText: 'Contraseña',
                 prefixIcon: Icons.lock_outline),
+            onChanged: (value) => loginForm.password = value,
             validator: (value) {
               return (value != null && value.length > 6)
                   ? null
@@ -112,7 +116,10 @@ class _LoginForm extends StatelessWidget {
               ),
               onPressed: () {
                 //llamamso a un método del provider
-                loginForm.isValidForm();
+                if (!loginForm.isValidForm()) {
+                  return;
+                }
+                Navigator.pushReplacementNamed(context, "home");
               })
         ],
       ),

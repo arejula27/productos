@@ -11,7 +11,6 @@ class LoginFormProvider extends ChangeNotifier {
   //bool isLoading ;
   bool isValidForm() {
     //si no es valido, no hacemos nada, el propio formulario ya muestra los errores
-    print(formKey.currentState?.validate() ?? false);
     return formKey.currentState?.validate() ?? false;
   }
 }
