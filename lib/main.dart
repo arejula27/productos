@@ -1,7 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:formvalidation/services/products_services.dart';
+import 'package:provider/provider.dart';
 import 'screen/screens.dart';
 
-void main() => runApp(const MyApp());
+void main() => runApp(const AppState());
+
+//estado global de la app, de tal forma que tengamos acceso
+// a los productos en cualquier widget
+class AppState extends StatelessWidget {
+  const AppState({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MultiProvider(
+      providers: [ChangeNotifierProvider(create: (_) => ProductService())],
+      child: MyApp(),
+    );
+  }
+}
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
