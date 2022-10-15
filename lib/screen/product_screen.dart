@@ -4,6 +4,7 @@ import 'package:formvalidation/providers/product_form_provider.dart';
 import 'package:formvalidation/services/services.dart';
 import 'package:formvalidation/styles/input_decorations.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../widgets/widgets.dart';
 
@@ -29,6 +30,7 @@ class _ProductScreenBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final productFormProvider = Provider.of<ProductFormProvider>(context);
     return Scaffold(
       body: SingleChildScrollView(
         //keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
@@ -53,8 +55,18 @@ class _ProductScreenBody extends StatelessWidget {
                     top: 60,
                     right: 20,
                     child: IconButton(
-                        onPressed: () {
+                        onPressed: () async {
                           //Camara o galeria
+                          final ImagePicker picker = ImagePicker();
+                          // Pick an image
+                          final XFile? image = await picker.pickImage(
+                              source: ImageSource.camera);
+                          if (image == null) {
+                            print("No selecciono imagen");
+                            return;
+                          }
+                          print("tenemos img ${image.path}}");
+                          productService.updateSelectedProductImage(image.path);
                         },
                         icon: const Icon(
                           Icons.camera_alt_outlined,
@@ -63,7 +75,7 @@ class _ProductScreenBody extends StatelessWidget {
                         )))
               ],
             ),
-            _ProductForm(),
+            const _ProductForm(),
             const SizedBox(
               height: 100,
             )
@@ -72,10 +84,25 @@ class _ProductScreenBody extends StatelessWidget {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
       floatingActionButton: FloatingActionButton(
-          child: const Icon(Icons.save_outlined),
-          onPressed: () {
-            //guardar producto
-          }),
+          onPressed: productService.isSaving
+              ? null
+              : () async {
+                  //guardar producto
+                  if (!productFormProvider.isValidForm()) return;
+                  final String? imageUrl = await productService.uploadImage();
+
+                  if (imageUrl != null) {
+                    productFormProvider.product.picture = imageUrl;
+                  }
+
+                  await productService
+                      .saveOrCreateProduct(productFormProvider.product);
+                },
+          child: productService.isSaving
+              ? const CircularProgressIndicator(
+                  color: Colors.white,
+                )
+              : const Icon(Icons.save_outlined)),
     );
   }
 }
@@ -94,48 +121,51 @@ class _ProductForm extends StatelessWidget {
       decoration: _buildBoxDecoration(),
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Form(
+          autovalidateMode: AutovalidateMode.onUserInteraction,
+          key: productForm.formKey,
           child: Column(
-        children: [
-          const SizedBox(height: 10),
-          TextFormField(
-            initialValue: product.name,
-            onChanged: ((value) => product.name = value),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return "El nombre es obligatorio";
-              }
-              return null;
-            },
-            decoration: InputDecorations.authInputDecoration(
-                hintText: "Nombre del producto", labelText: "Nombre:"),
-          ),
-          const SizedBox(height: 30),
-          TextFormField(
-            initialValue: "${product.price} €",
-            onChanged: (value) {
-              if (double.tryParse(value) == null) {
-                product.price = 0;
-              } else {
-                product.price = double.parse(value);
-              }
-            },
-            inputFormatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'^(\d+)?\.?\d{0,2}'))
+            children: [
+              const SizedBox(height: 10),
+              TextFormField(
+                initialValue: product.name,
+                onChanged: ((value) => product.name = value),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return "El nombre es obligatorio";
+                  }
+                  return null;
+                },
+                decoration: InputDecorations.authInputDecoration(
+                    hintText: "Nombre del producto", labelText: "Nombre:"),
+              ),
+              const SizedBox(height: 30),
+              TextFormField(
+                initialValue: "${product.price} €",
+                onChanged: (value) {
+                  if (double.tryParse(value) == null) {
+                    product.price = 0;
+                  } else {
+                    product.price = double.parse(value);
+                  }
+                },
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(
+                      RegExp(r'^(\d+)?\.?\d{0,2}'))
+                ],
+                keyboardType: TextInputType.number,
+                decoration: InputDecorations.authInputDecoration(
+                    hintText: "30€", labelText: "Precio:"),
+              ),
+              const SizedBox(height: 30),
+              SwitchListTile.adaptive(
+                title: const Text("Disponible"),
+                value: product.available,
+                activeColor: Colors.indigo,
+                onChanged: (value) => productForm.updateAvailability(value),
+              ),
+              const SizedBox(height: 30),
             ],
-            keyboardType: TextInputType.number,
-            decoration: InputDecorations.authInputDecoration(
-                hintText: "30€", labelText: "Precio:"),
-          ),
-          const SizedBox(height: 30),
-          SwitchListTile.adaptive(
-            title: const Text("Disponible"),
-            value: product.available,
-            activeColor: Colors.indigo,
-            onChanged: (value) => productForm.updateAvailability(value),
-          ),
-          const SizedBox(height: 30),
-        ],
-      )),
+          )),
     );
   }
 

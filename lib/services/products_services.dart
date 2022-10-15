@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:formvalidation/models/product.dart';
@@ -9,7 +10,10 @@ class ProductService extends ChangeNotifier {
       "flutter-varios-f9c6f-default-rtdb.europe-west1.firebasedatabase.app";
 
   bool isLoading = true;
+  bool isSaving = false;
   final List<Product> products = [];
+
+  File? newPictureFile;
 
   //nos permite seleccionar un producto entre páginas
   late Product selectedProduct;
@@ -39,5 +43,80 @@ class ProductService extends ChangeNotifier {
     notifyListeners();
 
     return products;
+  }
+
+  Future saveOrCreateProduct(Product product) async {
+    isSaving = true;
+    if (product.id == null) {
+      //se crea
+      await createProduct(product);
+    } else {
+      //Se actualiza
+      await updateProduct(product);
+    }
+    isSaving = false;
+    notifyListeners();
+  }
+
+  Future<String> updateProduct(Product product) async {
+    final url = Uri.https(_baseUrl, "products/${product.id}.json");
+    final resp = await http.put(url, body: product.toJson());
+    //final decodedData = resp.body;
+
+    //actualizar producta en la lista
+    final index = products.indexWhere((element) => element.id == product.id);
+    products[index] = product;
+    return product.id ?? "";
+  }
+
+  Future<String> createProduct(Product product) async {
+    final url = Uri.https(_baseUrl, 'products.json');
+    final resp = await http.post(url, body: product.toJson());
+    final decodedData = json.decode(resp.body);
+
+    product.id = decodedData['name'];
+
+    products.add(product);
+
+    return product.id!;
+  }
+
+  void updateSelectedProductImage(String path) {
+    //el path puede ser null, http (cloud) o en local
+    selectedProduct.picture = path;
+    newPictureFile = File.fromUri(Uri(path: path));
+
+    notifyListeners();
+  }
+
+  Future<String?> uploadImage() async {
+    if (newPictureFile == null) return null;
+
+    isSaving = true;
+    notifyListeners();
+
+    final url = Uri.parse(
+        "https://api.cloudinary.com/v1_1/dklmlfemq/image/upload?upload_preset=flutter");
+
+    final imageUploadRequest = http.MultipartRequest('POST', url);
+
+    final file =
+        await http.MultipartFile.fromPath('file', newPictureFile!.path);
+
+    imageUploadRequest.files.add(file);
+
+    final streamResponse = await imageUploadRequest.send();
+    final resp = await http.Response.fromStream(streamResponse);
+
+    if (resp.statusCode != 200 && resp.statusCode != 201) {
+      print('algo salio mal');
+      print(resp.body);
+      return null;
+    }
+
+    newPictureFile = null;
+
+    final decodedData = json.decode(resp.body);
+    return decodedData['secure_url'];
   }
 }

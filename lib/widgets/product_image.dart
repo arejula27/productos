@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 class ProductImage extends StatelessWidget {
@@ -20,30 +22,42 @@ class ProductImage extends StatelessWidget {
           child: ClipRRect(
               borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(45), topRight: Radius.circular(45)),
-              child: getImage(url)),
+              child: _getImage()),
         ),
       ),
     );
   }
-}
 
-BoxDecoration _buildBoxDecoration() => BoxDecoration(
-        color: Colors.black,
-        borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(45), topRight: Radius.circular(45)),
-        boxShadow: [
-          BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 5))
-        ]);
+  BoxDecoration _buildBoxDecoration() => BoxDecoration(
+          color: Colors.black,
+          borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(45), topRight: Radius.circular(45)),
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 5))
+          ]);
 
-Widget getImage(String? url) {
-  return url == null
-      ? const Image(image: AssetImage('assets/no-image.png'), fit: BoxFit.cover)
-      : FadeInImage(
-          placeholder: const AssetImage('assets/jar-loading.gif'),
-          image: NetworkImage(url),
-          fit: BoxFit.cover,
-        );
+  Widget _getImage() {
+    if (url == null) {
+      return const Image(
+        image: AssetImage('assets/no-image.png'),
+        fit: BoxFit.cover,
+      );
+    }
+
+    if (url!.startsWith('http')) {
+      return FadeInImage(
+        image: NetworkImage(url!),
+        placeholder: const AssetImage('assets/jar-loading.gif'),
+        fit: BoxFit.cover,
+      );
+    }
+
+    return Image.file(
+      File(url!),
+      fit: BoxFit.cover,
+    );
+  }
 }
