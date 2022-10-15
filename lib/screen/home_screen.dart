@@ -27,7 +27,11 @@ class HomeScreen extends StatelessWidget {
                       child: ProductCard(
                         product: productService.products[index],
                       ),
-                      onTap: () => Navigator.pushNamed(context, 'product'),
+                      onTap: () {
+                        productService.selectedProduct =
+                            productService.products[index].copy();
+                        Navigator.pushNamed(context, 'product');
+                      },
                     )),
             floatingActionButton: FloatingActionButton(
               child: const Icon(Icons.add),

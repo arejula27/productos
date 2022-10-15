@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:formvalidation/providers/login_form_provider.dart';
+import 'package:formvalidation/providers/providers.dart';
 import 'package:formvalidation/widgets/widgets.dart';
 import '../styles/input_decorations.dart';
 

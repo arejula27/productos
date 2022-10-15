@@ -11,6 +11,9 @@ class ProductService extends ChangeNotifier {
   bool isLoading = true;
   final List<Product> products = [];
 
+  //nos permite seleccionar un producto entre páginas
+  late Product selectedProduct;
+
   //hacer peticion de productos
 
   ProductService() {
