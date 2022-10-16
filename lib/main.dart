@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:formvalidation/services/products_services.dart';
 import 'package:provider/provider.dart';
 import 'screen/screens.dart';
+import 'services/services.dart';
 
 void main() => runApp(const AppState());
 
@@ -13,8 +13,15 @@ class AppState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => ProductService())],
-      child: MyApp(),
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => ProductService(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => AuthService(),
+        )
+      ],
+      child: const MyApp(),
     );
   }
 }
@@ -27,12 +34,15 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Form validator',
-      initialRoute: 'home',
+      initialRoute: 'checkAuth',
       routes: {
         'login': (_) => const LoginScreen(),
         'home': (_) => const HomeScreen(),
-        'product': (_) => const ProductScreen()
+        'product': (_) => const ProductScreen(),
+        "register": (_) => const RegisterScreen(),
+        "checkAuth": (_) => const CheckAuthScreen(),
       },
+      scaffoldMessengerKey: NotificationService.messengerKey,
       theme: ThemeData.light().copyWith(
           scaffoldBackgroundColor: Colors.grey[300],
           appBarTheme: const AppBarTheme(

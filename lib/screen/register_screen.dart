@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:formvalidation/services/services.dart';
 import 'package:provider/provider.dart';
 
 import 'package:formvalidation/providers/providers.dart';
 import 'package:formvalidation/widgets/widgets.dart';
-import '../services/services.dart';
 import '../styles/input_decorations.dart';
 
-class LoginScreen extends StatelessWidget {
-  const LoginScreen({super.key});
+class RegisterScreen extends StatelessWidget {
+  const RegisterScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +21,8 @@ class LoginScreen extends StatelessWidget {
                 child: Column(
               children: [
                 const SizedBox(height: 10),
-                Text('Login', style: Theme.of(context).textTheme.headline4),
+                Text('Crear cuenta',
+                    style: Theme.of(context).textTheme.headline4),
                 const SizedBox(height: 30),
 
                 //el scope del providerForm es solo el formulario
@@ -38,10 +39,9 @@ class LoginScreen extends StatelessWidget {
                   overlayColor:
                       MaterialStateProperty.all(Colors.indigo.withOpacity(0.1)),
                   shape: MaterialStateProperty.all(const StadiumBorder())),
-              onPressed: () =>
-                  Navigator.pushReplacementNamed(context, "register"),
+              onPressed: () => Navigator.pushReplacementNamed(context, "login"),
               child: const Text(
-                'Crear cuenta',
+                'Login',
                 style: TextStyle(fontSize: 18, color: Colors.black87),
               ),
             ),
@@ -119,21 +119,18 @@ class _LoginForm extends StatelessWidget {
                   : () async {
                       //quitamos el teclado de pantalla
                       FocusScope.of(context).unfocus();
-                      //llamamso a un método del provider
+                      //llamamos a un método del provider
                       if (!loginForm.isValidForm()) {
                         return;
                       }
                       loginForm.isLoading = true;
                       final authService =
                           Provider.of<AuthService>(context, listen: false);
-                      final error = await authService.iniciarSesion(
+                      final error = await authService.createUser(
                           loginForm.email, loginForm.password);
                       loginForm.isLoading = false;
                       if (error == null) {
                         Navigator.pushReplacementNamed(context, "home");
-                      } else {
-                        NotificationService.showSnackbar(
-                            "Usuario o contraseña incorrecto");
                       }
                     },
               child: Container(

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:formvalidation/models/product.dart';
 import 'package:http/http.dart' as http;
 
@@ -12,6 +13,7 @@ class ProductService extends ChangeNotifier {
   bool isLoading = true;
   bool isSaving = false;
   final List<Product> products = [];
+  final _storage = const FlutterSecureStorage();
 
   File? newPictureFile;
 
@@ -28,7 +30,8 @@ class ProductService extends ChangeNotifier {
     isLoading = true;
     notifyListeners();
 
-    final url = Uri.https(_baseUrl, 'products.json');
+    final url = Uri.https(_baseUrl, 'products.json',
+        {"auth": await _storage.read(key: "idToken") ?? ""});
     final resp = await http.get(url);
 
     final Map<String, dynamic> productsMap = json.decode(resp.body);
@@ -59,8 +62,12 @@ class ProductService extends ChangeNotifier {
   }
 
   Future<String> updateProduct(Product product) async {
-    final url = Uri.https(_baseUrl, "products/${product.id}.json");
-    final resp = await http.put(url, body: product.toJson());
+    final url = Uri.https(_baseUrl, "products/${product.id}.json",
+        {"auth": await _storage.read(key: "idToken") ?? ""});
+    final resp = await http.put(
+      url,
+      body: product.toJson(),
+    );
     //final decodedData = resp.body;
 
     //actualizar producta en la lista
@@ -70,7 +77,8 @@ class ProductService extends ChangeNotifier {
   }
 
   Future<String> createProduct(Product product) async {
-    final url = Uri.https(_baseUrl, 'products.json');
+    final url = Uri.https(_baseUrl, 'products.json',
+        {"auth": await _storage.read(key: "idToken") ?? ""});
     final resp = await http.post(url, body: product.toJson());
     final decodedData = json.decode(resp.body);
 

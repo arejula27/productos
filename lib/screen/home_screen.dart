@@ -14,12 +14,20 @@ class HomeScreen extends StatelessWidget {
     //este no se crea. PAra cambia dicho comportamiento en main poner:
     //lazy:false
     final productService = Provider.of<ProductService>(context);
+    final authService = Provider.of<AuthService>(context);
 
     return productService.isLoading
         ? const LoadingScreen()
         : Scaffold(
             appBar: AppBar(
               title: const Center(child: Text("Productos")),
+              leading: IconButton(
+                icon: const Icon(Icons.logout_outlined),
+                onPressed: () {
+                  authService.logout();
+                  Navigator.pushReplacementNamed(context, "login");
+                },
+              ),
             ),
             body: ListView.builder(
                 itemCount: productService.products.length,
